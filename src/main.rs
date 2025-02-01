@@ -61,7 +61,7 @@ fn main() {
         handle.join().unwrap();
     }
 
-    println!("Results: {:?}", results);
+    println!("Results: {:?}", find_highest_number(&results));
 
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
