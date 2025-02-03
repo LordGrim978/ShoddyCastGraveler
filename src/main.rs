@@ -1,21 +1,21 @@
 use std::sync::mpsc;
-use rand::Rng;
 use std::thread;
+use rand::Rng;
+use rand_core::{SeedableRng};
+use rand_xorshift::XorShiftRng;
+
 
 fn main() {
-    let mut highest_roll = 0;
-
     use std::time::Instant;
     let now = Instant::now();
 
-    fn roll_dice(amount_of_trys: i32, rng: &mut rand::rngs::ThreadRng) -> (i32) {
+    fn roll_dice(amount_of_trys: i32, mut rng: XorShiftRng) -> (i32) {
         let mut highest_roll = 0;
         let mut rolls = 0;
         let mut number = 0;
         while highest_roll <= 177 && rolls < amount_of_trys {
             for i in 0..231 {
-                let roll = rng.random_range(1..5);
-                match roll {
+                match (rng.random_range(1..5) ) {
                     1 => {number += 1},
                     _ => {}
                 }
@@ -26,7 +26,7 @@ fn main() {
             }
             number = 0;
         }
-        return highest_roll;
+        highest_roll
     }
     fn find_highest_number(vector: &Vec<i32>) -> i32 {
         let mut highest_number = 0;
@@ -35,7 +35,7 @@ fn main() {
                 highest_number = vector[i];
             }
         }
-        return highest_number;
+        highest_number
     }
 
 
@@ -47,7 +47,8 @@ fn main() {
     for i in 0..num_threads {
         let tx_clone = tx.clone();
         let handle = thread::spawn(move || {
-            let result = roll_dice(1000000000/num_threads, &mut rand::rng());
+            let mut rng = XorShiftRng::from_os_rng();
+            let result = roll_dice(1000000000/num_threads, rng);
             tx_clone.send(result).unwrap();
         });
         handles.push(handle);
@@ -61,7 +62,7 @@ fn main() {
         handle.join().unwrap();
     }
 
-    println!("Results: {:?}", find_highest_number(&results));
+    println!("Results: {:?}", results);
 
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
